@@ -15,9 +15,20 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => { // websocket事件 --- 连接
     console.log('New user connected');
 
+    socket.emit('newMessage', { // server发给自己
+        form: 'Admin',
+        text: 'Welcome to the chat app'
+    });
+
+    socket.broadcast.emit('newMessage', { // server发给除去自己的所有人
+        from: 'Admin',
+        text: 'New user joined',
+        createdAt: new Date().getTime()
+    });
+
     socket.on('createMessage', (message) => {
         console.log('createMessage', message);
-        io.emit('newMessage', {
+        io.emit('newMessage', { // server发给所有人
             from: message.from,
             text: message.text,
             createdAt: new Date().getTime()
