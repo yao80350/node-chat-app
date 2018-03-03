@@ -17,18 +17,18 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => { // websocket事件 --- 连接
     console.log('New user connected');
 
-    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+    socket.emit('newMessage', generateMessage('管理员', '欢迎来到聊天室'));
 
-    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
+    socket.broadcast.emit('newMessage', generateMessage('管理员', '有新成员加入'));
 
     socket.on('createMessage', (message, callback) => {
         console.log('createMessage', message);
         io.emit('newMessage', generateMessage(message.from, message.text));
-        callback('This is from server');
+        callback();
     });
 
     socket.on('createLocationMessage', (coords) => {
-        io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+        io.emit('newLocationMessage', generateLocationMessage('管理员', coords.latitude, coords.longitude));
     });
 
     socket.on('disconnect', () => {

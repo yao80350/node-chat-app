@@ -2,17 +2,25 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body>
-    <p>hello!!</p>
+<body class="chat">
+    <div class="chat__sidebar">
+        <h3>群成员</h3>
+        <div id="users"></div>
+    </div>
 
-    <ol id="messages"></ol>
+    <div class="chat__main">
+        <ol id="messages" class="chat__messages"></ol>
 
-    <form id="message-form">
-        <input name="message" type="text" placeholder="Message">
-        <button>Send</button>
-    </form>
-    <button id="send-location">Send Location</button>
+        <div class="chat__footer">
+            <form id="message-form">
+                <input name="message" type="text" placeholder="输入信息" autofocus autocomplete="off">
+                <button>发送</button>
+            </form>
+            <button id="send-location">发送位置</button>
+        </div>
+    </div>
 
     <!-- websocket前端的库 -->
     <script src="/socket.io/socket.io.js"></script>
