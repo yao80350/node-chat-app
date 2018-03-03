@@ -3,7 +3,7 @@ const http = require('http'); //nodejs
 const express = require('express'); //利用nodejs的http请求
 const socketIO = require('socket.io'); // websocket 请求 后端的库
 
-const {generateMessage} = require('./utils/message');
+const {generateMessage, generateLocationMessage} = require('./utils/message');
 
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
@@ -25,6 +25,10 @@ io.on('connection', (socket) => { // websocket事件 --- 连接
         console.log('createMessage', message);
         io.emit('newMessage', generateMessage(message.from, message.text));
         callback('This is from server');
+    });
+
+    socket.on('createLocationMessage', (coords) => {
+        io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
     });
 
     socket.on('disconnect', () => {
