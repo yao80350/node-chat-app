@@ -1,5 +1,20 @@
 var socket = io();
 
+function scrollToBottom() {
+    var messages = jQuery('#messages');
+    var newMessage = messages.children('li:last-child');
+
+    var clientHeight = messages.prop('clientHeight');
+    var scrollTop = messages.prop('scrollTop');
+    var scrollHeight = messages.prop('scrollHeight');
+    var newMessageHeight = newMessage.innerHeight(); // newMessage包括padding的高
+    var lastMessageHeight = newMessage.prev().innerHeight(); // mewMessage前一个
+
+    if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+        messages.scrollTop(scrollHeight); //将scrollTop值设为scrollHeight保证最大---也就是滚条一定推到最底部
+    }
+};
+
 // 前端网页es6兼容少，所以改es5
 socket.on('connect', function() {
     console.log('Connected to server');
@@ -18,6 +33,7 @@ socket.on('newMessage', function(message) {
         createdAt: formattedTime
     });
     jQuery('#messages').append(html);
+    scrollToBottom();
 });
 
 socket.on('newLocationMessage', function(message) {
@@ -29,6 +45,7 @@ socket.on('newLocationMessage', function(message) {
         createdAt: formattedTime
     });
     jQuery('#messages').append(html);
+    scrollToBottom();
 });
 
 jQuery('#message-form').on('submit', function(e) {
