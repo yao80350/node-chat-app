@@ -4,6 +4,8 @@ const express = require('express'); //利用nodejs的http请求
 const socketIO = require('socket.io'); // websocket 请求 后端的库
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
+const {isRealString} = require('./utils/validation');
+const {Users} = require('./utils/users');
 
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
@@ -11,15 +13,25 @@ const port = process.env.PORT || 3000;
 let app = express();
 let server = http.createServer(app); // 默认使用http请求，这里是为了区分出来
 let io = socketIO(server);
+let users = new Users();
 
 app.use(express.static(publicPath));
 
 io.on('connection', (socket) => { // websocket事件 --- 连接
-    console.log('New user connected');
+    socket.on('join', (params, callback) => {
+        if (!isRealString(params.name) || !isRealString(params.room)) {
+            callback('Name and room name are required.');
+        }
 
-    socket.emit('newMessage', generateMessage('管理员', '欢迎来到聊天室'));
+        socket.join(params.room); // 凭借socket.join内的string连接到相同房间，才可以用下面的.to()
+        users.removeUser(socket.id); // 暂时不知道什么作用
+        users.addUser(socket.id, params.name, params.room);
 
-    socket.broadcast.emit('newMessage', generateMessage('管理员', '有新成员加入'));
+        io.to(params.room).emit('updateUserList', users.getUserList(params.room));
+        socket.emit('newMessage', generateMessage('管理员', '欢迎来到聊天室'));
+        socket.broadcast.to(params.room).emit('newMessage', generateMessage('管理员', `${params.name}加入了房间`));
+        callback();
+    });
 
     socket.on('createMessage', (message, callback) => {
         console.log('createMessage', message);
@@ -32,7 +44,12 @@ io.on('connection', (socket) => { // websocket事件 --- 连接
     });
 
     socket.on('disconnect', () => {
-        console.log('User was disconnected');
+        let user = users.removeUser(socket.id);
+
+        if (user) {
+            io.to(user.room).emit('updateUserList', users.getUserList(user.room));
+            io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name}离开了`));
+        }
     });
 });
 
